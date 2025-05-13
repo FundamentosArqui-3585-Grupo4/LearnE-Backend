@@ -2,110 +2,155 @@ package org.learne.platform.learne.interfaces.rest;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.learne.platform.learne.domain.model.aggregates.Course;
+import org.learne.platform.learne.infrastructure.persistence.jpa.CourseRepository;
+import org.learne.platform.learne.infrastructure.persistence.jpa.TutorialsCoursesRepository;
 import org.learne.platform.learne.interfaces.rest.resources.TutorialsCourses.CreateTutorialsCoursesResource;
 import org.learne.platform.learne.interfaces.rest.resources.TutorialsCourses.TutorialsCoursesResource;
 import org.learne.platform.learne.interfaces.rest.resources.TutorialsCourses.UpdateTutorialsCoursesResource;
+import org.learne.platform.profile.domain.model.aggregates.User;
+import org.learne.platform.profile.infrastructure.persistence.jpa.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class TutorialsCoursesControllerTest {
+public class TutorialsCoursesControllerTest {
+
+    @LocalServerPort
+    private int port;
 
     @Autowired
     private TestRestTemplate restTemplate;
 
     @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private UserRepository userRepository;
 
     @Autowired
-    private TutorialsCoursesController controller;
+    private CourseRepository courseRepository;
 
+    @Autowired
+    private TutorialsCoursesRepository tutorialsCoursesRepository;
+
+    private Long courseId;
+    private Long teacherId;
+    private HttpHeaders headers;
 
     @BeforeEach
     void setup() {
+        headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-        jdbcTemplate.execute("""
-        INSERT INTO users (id, username, email, password, first_name, last_name, type_user, type_plan, created_at, updated_at)
-        VALUES (2, 'teacher1', 'teacher@mail.com', '123456', 'Teacher', 'One', 1, 1, NOW(), NOW())
-        ON DUPLICATE KEY UPDATE username = username
-    """);
+        // Teacher
+        User teacher = new User();
+        teacher.setFirstName("Prof");
+        teacher.setLastName("Smith");
+        teacher.setUsername("profsmith");
+        teacher.setEmail("prof@example.com");
+        teacher.setPassword("securepass");
+        teacher.setType_user(1);
+        teacher.setType_plan(1);
+        teacherId = userRepository.save(teacher).getId();
 
-        jdbcTemplate.execute("""
-        INSERT INTO courses (id, title, description, duration, level, principal_image, prior_knowledge, url_video, teacher_id, created_at, updated_at)
-        VALUES (1, 'Curso Test', 'Descripción', '1h', 'Básico', 'img.jpg', 'ninguno', 'video.url', 2, NOW(), NOW())
-        ON DUPLICATE KEY UPDATE title = title
-    """);
+        // Course
+        Course course = new Course();
+        course.setTitle("Math Advanced");
+        course.setDescription("Level 2");
+        course.setUser(teacher);
+        course.setLevel("Intermediate");
+        course.setDuration("2h");
+        course.setPrior_knowledge("Basic Math");
+        course.setPrincipal_image("img.jpg");
+        course.setUrl_video("mathvideo.com");
+        courseId = courseRepository.save(course).getId();
     }
 
     @Test
     void createTutorialsCourses_shouldReturn201() {
-        String url = "/api/v1/tutorials_courses";
-
         CreateTutorialsCoursesResource resource = new CreateTutorialsCoursesResource(
-                1L, 2L, "2025-12-01", "10:45", false, "https://test"
+                courseId, teacherId, "2025-12-01", "10:45", false, "https://zoom.us/1"
         );
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<CreateTutorialsCoursesResource> request = new HttpEntity<>(resource, headers);
-
         ResponseEntity<TutorialsCoursesResource> response = restTemplate.postForEntity(
-                url, request, TutorialsCoursesResource.class
+                getBaseUrl(), request, TutorialsCoursesResource.class
         );
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertEquals(resource.courses_id(), response.getBody().courses_id());
-        assertEquals(resource.teacher_id(), response.getBody().teacher_id());
-        assertEquals(resource.date(), response.getBody().date());
-        assertEquals(resource.hour(), response.getBody().hour());
-        assertEquals(resource.is_reservated(), response.getBody().is_reservated());
-        assertEquals(resource.link(), response.getBody().link());
+        assertEquals(courseId, response.getBody().courses_id());
+        assertEquals(teacherId, response.getBody().teacher_id());
     }
 
     @Test
     void getAllTutorialsCourses_shouldReturn200() {
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/tutorials_courses", String.class);
-        assertTrue(response.getStatusCode().is2xxSuccessful() || response.getStatusCode() == HttpStatus.NOT_FOUND);
+        createTutorial(); // asegúrate de que hay al menos uno
+
+        ResponseEntity<TutorialsCoursesResource[]> response = restTemplate.getForEntity(
+                getBaseUrl(), TutorialsCoursesResource[].class
+        );
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().length > 0);
     }
 
     @Test
     void getTutorialsCourseById_shouldReturn200() {
-        Long id = 1L;
+        Long tutorialId = createTutorial();
 
-        // Asegurarse que el tutorial existe
-        jdbcTemplate.execute("INSERT INTO tutorials_courses (id, courses_id, teacher_id, date, hour, is_reservated, link, created_at, updated_at) " +
-                "VALUES (1, 1, 2, '2025-12-01', '10:00', false, 'https://test', NOW(), NOW()) " +
-                "ON DUPLICATE KEY UPDATE link = link");
+        ResponseEntity<TutorialsCoursesResource> response = restTemplate.getForEntity(
+                getBaseUrl() + "/" + tutorialId, TutorialsCoursesResource.class
+        );
 
-        ResponseEntity<String> response = restTemplate.getForEntity("/api/v1/tutorials_courses/" + id, String.class);
-        assertTrue(response.getStatusCode().is2xxSuccessful() || response.getStatusCode() == HttpStatus.NOT_FOUND);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(tutorialId, response.getBody().id());
     }
 
     @Test
-    void updateTutorialsCourse_shouldReturn200or404() {
-        Long id = 1L;
+    void updateTutorialCourse_shouldReturn200() {
+        Long tutorialId = createTutorial();
 
-        UpdateTutorialsCoursesResource resource = new UpdateTutorialsCoursesResource(
-                1L, 2L, "2025-12-01", "11:00", true, "https://updated"
+        UpdateTutorialsCoursesResource update = new UpdateTutorialsCoursesResource(1L, 2L, "2025-12-02", "11:00", true,"https://zoom.us/updated"
         );
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<UpdateTutorialsCoursesResource> request = new HttpEntity<>(resource, headers);
-
-        ResponseEntity<String> response = restTemplate.exchange(
-                "/api/v1/tutorials_courses/" + id,
+        HttpEntity<UpdateTutorialsCoursesResource> request = new HttpEntity<>(update, headers);
+        ResponseEntity<TutorialsCoursesResource> response = restTemplate.exchange(
+                getBaseUrl() + "/" + tutorialId,
                 HttpMethod.PUT,
                 request,
-                String.class
+                TutorialsCoursesResource.class
         );
 
-        assertTrue(response.getStatusCode().is2xxSuccessful() || response.getStatusCode() == HttpStatus.NOT_FOUND);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("2025-12-02", response.getBody().date());
+        assertEquals("11:00", response.getBody().hour());
+        assertTrue(response.getBody().is_reservated());
+    }
+
+    private Long createTutorial() {
+        CreateTutorialsCoursesResource resource = new CreateTutorialsCoursesResource(
+                courseId, teacherId, "2025-12-01", "10:00", false, "https://zoom.us/test"
+        );
+
+        HttpEntity<CreateTutorialsCoursesResource> request = new HttpEntity<>(resource, headers);
+        ResponseEntity<TutorialsCoursesResource> response = restTemplate.postForEntity(
+                getBaseUrl(), request, TutorialsCoursesResource.class
+        );
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        return response.getBody().id();
+    }
+
+    private String getBaseUrl() {
+        return "http://localhost:" + port + "/api/v1/tutorials_courses";
     }
 }

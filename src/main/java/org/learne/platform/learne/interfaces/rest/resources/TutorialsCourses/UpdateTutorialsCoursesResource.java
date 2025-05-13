@@ -15,8 +15,11 @@ public record UpdateTutorialsCoursesResource(Long courses_id, Long teacher_id, S
         if (hour == null || hour.isBlank()) {
             throw new IllegalArgumentException("hour cannot be blank");
         }
-        if (is_reservated == null || !is_reservated) {
+        if (is_reservated == null) {
             throw new IllegalArgumentException("isReservated cannot be null");
+        }
+        if (link == null || link.isBlank()) {
+            throw new IllegalArgumentException("link cannot be blank");
         }
     }
 }

@@ -2,12 +2,14 @@ package org.learne.platform.learne.domain.model.aggregates;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.learne.platform.profile.domain.model.aggregates.User;
 import org.learne.platform.learne.domain.model.commands.TutorialsCourses.CreateTutorialsCoursesCommand;
 import org.learne.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 
 @Entity
 @Getter
+@Setter
 public class TutorialsCourses extends AuditableAbstractAggregateRoot<TutorialsCourses> {
     @ManyToOne
     @JoinColumn(name = "courses_id", nullable = false)

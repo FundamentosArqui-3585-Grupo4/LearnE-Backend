@@ -18,18 +18,13 @@ public class TutorialsCoursesCommandServiceImpl implements TutorialsCoursesComma
 
     @Override
     public Long handle(CreateTutorialsCoursesCommand command) {
-        if(tutorialsCoursesRepository.existsByCourseIdAndDateAndHour(command.courseId(), command.date(), command.hour())) {
-            throw new IllegalArgumentException("Tutorials Course with course id " + command.courseId() + " in the date " + command.date() +
-                    " and hour " + command.hour() + " already exists");
+        if (tutorialsCoursesRepository.existsByCourseIdAndDateAndHour(command.courseId(), command.date(), command.hour())) {
+            throw new IllegalArgumentException("Tutorial already scheduled");
         }
-        var newTutorialsCourses = new TutorialsCourses(command);
 
-        try {
-            tutorialsCoursesRepository.save(newTutorialsCourses);
-        } catch (RuntimeException e) {
-            throw new IllegalArgumentException("An error occurred while saving the tutorials course " + e.getMessage());
-        }
-        return newTutorialsCourses.getId();
+        var newTutorialsCourses = new TutorialsCourses(command);
+        var saved = tutorialsCoursesRepository.save(newTutorialsCourses);
+        return saved.getId();
     }
 
     @Override
@@ -48,4 +43,5 @@ public class TutorialsCoursesCommandServiceImpl implements TutorialsCoursesComma
             throw new IllegalArgumentException("An error occurred while updating the tutorials course " + e.getMessage());
         }
     }
+
 }
