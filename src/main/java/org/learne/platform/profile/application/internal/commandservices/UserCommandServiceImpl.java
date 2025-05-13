@@ -32,15 +32,15 @@ public class UserCommandServiceImpl implements UserCommandService {
     }
     @Override
     public Long handle(CreateUserCommand command) {
-        if(userRepository.existsByUsernameAndEmail(command.username(), command.email())) {
+        if (userRepository.existsByUsernameAndEmail(command.username(), command.email())) {
             throw new IllegalArgumentException("username and email already exists with a user");
         }
         var newUser = new User(command);
         try {
-            userRepository.save(newUser);
+            User savedUser = userRepository.save(newUser);
+            return savedUser.getId();
         } catch (RuntimeException e) {
             throw new IllegalArgumentException("An error occurred while saving the user " + e.getMessage());
         }
-        return newUser.getId();
     }
 }

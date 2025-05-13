@@ -5,11 +5,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
+import lombok.Setter;
 import org.learne.platform.learne.domain.model.commands.Exam.CreateExamCommand;
 import org.learne.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 
 @Entity
 @Getter
+@Setter
 public class Exam extends AuditableAbstractAggregateRoot<Exam> {
 
     @ManyToOne
@@ -36,4 +38,10 @@ public class Exam extends AuditableAbstractAggregateRoot<Exam> {
         this.setId(id);
     }
 
+    public void setTitle(String testExam) {
+        if (testExam == null || testExam.trim().isEmpty()) {
+            throw new IllegalArgumentException("Title cannot be null or empty");
+        }
+        this.title = testExam;
+    }
 }

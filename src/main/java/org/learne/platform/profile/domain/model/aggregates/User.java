@@ -4,12 +4,14 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.Email;
 import lombok.Getter;
+import lombok.Setter;
 import org.learne.platform.profile.domain.model.commands.CreateUserCommand;
 import org.learne.platform.profile.domain.model.commands.UpdateUserCommand;
 import org.learne.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 
 @Entity
 @Getter
+@Setter
 public class User extends AuditableAbstractAggregateRoot<User> {
     @Column(nullable = false)
     private String firstName;
@@ -56,4 +58,8 @@ public class User extends AuditableAbstractAggregateRoot<User> {
         this.type_plan = command.type_plan();
     }
     public User(Long id) {setId(id);}
+
+    public void setPublicId(Long id) {
+        this.setId(id);
+    }
 }

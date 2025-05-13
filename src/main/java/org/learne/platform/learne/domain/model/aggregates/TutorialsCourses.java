@@ -51,5 +51,15 @@ public class TutorialsCourses extends AuditableAbstractAggregateRoot<TutorialsCo
         this.link = command.link();
     }
 
+    public TutorialsCourses(Long courseId, Long teacherId, String date, String hour, Boolean isReservated, String link) {
+        this.course = new Course(courseId);
+        this.user = new User(teacherId);
+        this.date = date;
+        this.hour = hour;
+        this.isReservated = isReservated;
+        this.link = link;
+    }
+
+
     public TutorialsCourses(Long id) {this.setId(id);}
 }

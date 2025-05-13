@@ -16,6 +16,7 @@ public class AuditableAbstractAggregateRoot<T extends AbstractAggregateRoot<T>> 
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", updatable = false, nullable = false)
     private Long id;
 
     @CreatedDate
@@ -30,7 +31,7 @@ public class AuditableAbstractAggregateRoot<T extends AbstractAggregateRoot<T>> 
         super.registerEvent(event);
     }
 
-    protected void setId(Long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 }

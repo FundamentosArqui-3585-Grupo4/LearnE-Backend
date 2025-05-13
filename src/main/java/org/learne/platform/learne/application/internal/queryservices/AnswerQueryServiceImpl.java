@@ -19,7 +19,6 @@ public class AnswerQueryServiceImpl implements AnswerQueryService {
         this.answerRepository = answerRepository;
     }
 
-
     @Override
     public Optional<Answer> handle(GetAnswerByIdQuery query) {
         return answerRepository.findById(query.id());

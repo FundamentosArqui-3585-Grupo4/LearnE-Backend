@@ -7,5 +7,4 @@ import java.util.Optional;
 
 public interface UnitRepository extends JpaRepository<Unit, Long> {
     Optional<Unit> findById(Long id);
-    boolean existsByTitle(String title);
 }

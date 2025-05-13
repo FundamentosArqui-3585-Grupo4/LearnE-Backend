@@ -14,15 +14,14 @@ public class UnitCommandServiceImpl implements UnitCommandService {
     }
     @Override
     public Long handle(CreateUnitCommand command) {
-        if(unitRepository.existsByTitle(command.title())) {
-            throw new IllegalArgumentException("Unit with title " + command.title() + " already exists");
-        }
         var newUnit = new Unit(command);
+
         try {
             unitRepository.save(newUnit);
-        }catch (RuntimeException e) {
-            throw new IllegalArgumentException("An error occurred while saving a new unit " + e.getMessage());
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("An error occurred while saving a new unit: " + e.getMessage());
         }
+
         return newUnit.getId();
     }
 }

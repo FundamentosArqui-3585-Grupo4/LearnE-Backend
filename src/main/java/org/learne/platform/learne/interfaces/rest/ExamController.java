@@ -84,17 +84,13 @@ public class ExamController {
     @GetMapping
     @Operation(summary = "Get all exams", description = "Get all exams")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Exams found"),
-            @ApiResponse(responseCode = "404", description = "Exams not found")
+            @ApiResponse(responseCode = "200", description = "Exams found")
     })
     public ResponseEntity<List<ExamResource>> getAllExams() {
         var exams = examQueryService.handle(new GetAllExamsQuery());
-        if (exams.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
         var examResources = exams.stream()
-                .map(ExamResourceFromEntityAssembler:: ToResourceFromEntity)
+                .map(ExamResourceFromEntityAssembler::ToResourceFromEntity)
                 .toList();
-        return ResponseEntity.ok(examResources);
+        return ResponseEntity.ok(examResources); // siempre 200
     }
 }

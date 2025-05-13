@@ -33,8 +33,6 @@ public class AnswerController {
         this.answerQueryService = answerQueryService;
     }
 
-
-
     @PostMapping
     @Operation(summary = "Create answer", description = "Create answer")
     @ApiResponses(value = {

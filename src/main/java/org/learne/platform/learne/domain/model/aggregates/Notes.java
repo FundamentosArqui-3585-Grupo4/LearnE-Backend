@@ -2,13 +2,14 @@ package org.learne.platform.learne.domain.model.aggregates;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.Setter;
 import org.learne.platform.profile.domain.model.aggregates.User;
 import org.learne.platform.learne.domain.model.commands.Note.CreateNotesCommand;
 import org.learne.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 
 @Entity
 @Getter
-
+@Setter
 public class Notes extends AuditableAbstractAggregateRoot<Notes> {
 
     @ManyToOne

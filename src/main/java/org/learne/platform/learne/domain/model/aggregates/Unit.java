@@ -4,6 +4,7 @@ package org.learne.platform.learne.domain.model.aggregates;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.Setter;
 import org.learne.platform.learne.domain.model.commands.Unit.CreateUnitCommand;
 import org.learne.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
 public class Unit extends AuditableAbstractAggregateRoot<Unit> {
 
     @ManyToOne

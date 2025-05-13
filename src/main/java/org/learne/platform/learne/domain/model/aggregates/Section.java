@@ -6,11 +6,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
+import lombok.Setter;
 import org.learne.platform.learne.domain.model.commands.Section.CreateSectionCommand;
 import org.learne.platform.shared.domain.model.aggregates.AuditableAbstractAggregateRoot;
 
 @Entity
 @Getter
+@Setter
 public class Section extends AuditableAbstractAggregateRoot<Section> {
     @ManyToOne
     @JoinColumn(name = "unit_id", nullable = false)
